@@ -1,0 +1,39 @@
+This example demonstrate how top filter the two texts that are to be
+compared prior to their comparison. You can remove tags, strings,
+links, and more that you don't want to be part of the comparison. You
+can even implement an entirely custom string comparison function, and
+then simply return random strings as the comparison strings.
+
+
+function custom_diffing_filter($strings_array)
+{ 
+  $old_string = $strings_array[0];
+  $new_string = $strings_array[1];
+
+  // remove <footer> elements
+  $remove_footer = "#<footer>.*</footer>#";
+  $old_string = preg_replace($remove_footer, '', $old_string);
+  $new_string = preg_replace($remove_footer, '', $new_string);
+
+  // remove Wayback Machine URL prefixes from links
+  $remove_footer = '#https?://web.archive.org/web/[0-9]+/#';
+  $old_string = preg_replace($remove_footer, '', $old_string);
+  $new_string = preg_replace($remove_footer, '', $new_string);
+
+  return array($old_string, $new_string);
+}
+
+add_filter('minor_edits_text_diff_filter', 'custom_diffing_filter', 100, 1);
+
+--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+You can be notified of minor or significant updates to a post by adding
+a filter to the `minor_edits_post_status_minor_update` or the
+`minor_edits_post_status_significant_update` actions. The below example
+logs the URL of significantly updated posts to the server’s error log.
+
+function log_significantly_updated_posts($new_post, $old_post)
+{
+  $post_link = get_permalink($new_post['ID']);
+  error_log("Significantly updated post: {$post_link}", 0);
+}
